@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  animatediff-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: animatediff-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+      - ./outputs:/app/outputs
+      - ./models:/app/models
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - FORCE_CPU=false
+      - ADMIN_PASSWORD=admin123
+      - SECRET_KEY=dev-secret-key-change-in-production
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  animatediff-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: animatediff-prod
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./models:/app/models
+    env_file:
+      - .env
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  animatediff-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: animatediff-cpu
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./models:/app/models
+    environment:
+      - FORCE_CPU=true
+      - ADMIN_PASSWORD=admin123
+      - SECRET_KEY=dev-secret-key-change-in-production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis for production queue management (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: animatediff-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis_data:

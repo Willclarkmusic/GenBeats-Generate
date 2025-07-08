@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimateDiff Video Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AnimateDiff Video Generator</h1>
+            <div class="header-actions">
+                <div class="status-indicator">
+                    <span id="status-text">Loading...</span>
+                    <div id="status-dot" class="status-dot"></div>
+                </div>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <div class="sidebar">
+                <div class="section">
+                    <h3>Generate Video</h3>
+                    <form id="videoForm">
+                        <div class="form-group">
+                            <label for="prompt">Prompt:</label>
+                            <textarea id="prompt" name="prompt" rows="3" required 
+                                placeholder="A beautiful sunset over mountains with flowing water..."></textarea>
+                            <div class="char-counter">
+                                <span id="prompt-counter">0</span> characters
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="negative_prompt">Negative Prompt:</label>
+                            <textarea id="negative_prompt" name="negative_prompt" rows="2" 
+                                placeholder="blurry, low quality, distorted..."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="steps">Steps:</label>
+                                <input type="range" id="steps" name="steps" min="1" max="50" value="28">
+                                <span id="steps-value">28</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="guidance_scale">Guidance Scale:</label>
+                                <input type="range" id="guidance_scale" name="guidance_scale" min="1" max="20" step="0.5" value="7.5">
+                                <span id="guidance_scale-value">7.5</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="width">Width:</label>
+                                <select id="width" name="width">
+                                    <option value="512">512</option>
+                                    <option value="768" selected>768</option>
+                                    <option value="1024">1024</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="height">Height:</label>
+                                <select id="height" name="height">
+                                    <option value="512" selected>512</option>
+                                    <option value="768">768</option>
+                                    <option value="1024">1024</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="duration">Duration (frames):</label>
+                                <input type="range" id="duration" name="duration" min="8" max="32" value="16">
+                                <span id="duration-value">16</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="motion_scale">Motion Scale:</label>
+                                <input type="range" id="motion_scale" name="motion_scale" min="0.1" max="2" step="0.1" value="1">
+                                <span id="motion_scale-value">1.0</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seed">Seed (optional):</label>
+                            <input type="number" id="seed" name="seed" value="-1" placeholder="-1 for random">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="generate-btn">Generate Video</button>
+                    </form>
+                </div>
+
+                <div class="section">
+                    <h3>Presets</h3>
+                    <div class="presets">
+                        <button class="btn btn-outline preset-btn" data-preset="cinematic">Cinematic</button>
+                        <button class="btn btn-outline preset-btn" data-preset="nature">Nature</button>
+                        <button class="btn btn-outline preset-btn" data-preset="portrait">Portrait</button>
+                        <button class="btn btn-outline preset-btn" data-preset="abstract">Abstract</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="section">
+                    <h3>Generation Progress</h3>
+                    <div id="progress-container" style="display: none;">
+                        <div class="progress-bar">
+                            <div id="progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progress-text">Preparing...</span>
+                            <span id="progress-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Generated Videos</h3>
+                    <div id="videos-container" class="videos-grid">
+                        <!-- Videos will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="video-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="modal-close">&times;</span>
+            <div id="modal-body">
+                <!-- Video player will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
