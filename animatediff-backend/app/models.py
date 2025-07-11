@@ -19,7 +19,7 @@ class VideoGenerationRequest(BaseModel):
     guidance_scale: float = Field(7.5, ge=1.0, le=20.0, description="Guidance scale for generation")
     width: int = Field(768, ge=256, le=1024, description="Video width")
     height: int = Field(512, ge=256, le=1024, description="Video height")
-    duration: int = Field(16, ge=8, le=32, description="Number of frames")
+    duration: int = Field(16, ge=8, le=80, description="Number of frames (8 frames = 1 second at 8 FPS)")
     seed: int = Field(-1, description="Random seed (-1 for random)")
     motion_scale: float = Field(1.0, ge=0.1, le=2.0, description="Motion intensity scale")
 

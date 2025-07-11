@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 from typing import Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from .models import Job, JobStatus, VideoGenerationRequest
 import logging

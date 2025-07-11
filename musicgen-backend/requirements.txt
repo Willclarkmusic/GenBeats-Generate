@@ -1,0 +1,56 @@
+# MusicGen FastAPI Backend with CUDA Support
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# AI/ML Libraries - CPU Version (replace with CUDA version below)
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+transformers>=4.35.0
+accelerate>=0.24.0
+
+# Audio Processing
+scipy>=1.11.0
+numpy>=1.24.0
+
+# Data Validation and Utilities
+pydantic>=2.4.0
+python-multipart>=0.0.6
+aiofiles>=23.2.0
+
+# System Monitoring (optional but recommended)
+psutil>=5.9.0
+GPUtil>=1.4.0
+
+# Development and Debugging
+pytest>=7.4.0
+requests>=2.31.0
+
+# CUDA Installation Instructions:
+# ================================
+# For NVIDIA RTX 3080 Ti and Windows 11:
+# 
+# 1. Uninstall CPU-only PyTorch:
+#    pip uninstall torch torchvision torchaudio
+#
+# 2. Install CUDA-enabled PyTorch (choose one):
+#
+#    For CUDA 11.8 (recommended for RTX 3080 Ti):
+#    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+#    For CUDA 12.1 (if you have latest drivers):
+#    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+#
+# 3. Verify installation:
+#    python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+#    python -c "import torch; print(f'GPU name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"N/A\"}')"
+#
+# Alternative CPU-only installation (for testing without GPU):
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#
+# Cloud deployment note:
+# For cloud instances, check the CUDA version available:
+# nvidia-smi
+# Then install matching PyTorch version from above options.

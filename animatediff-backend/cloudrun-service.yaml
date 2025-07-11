@@ -1,0 +1,74 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: animatediff-backend
+  annotations:
+    # Enable GPU support
+    run.googleapis.com/gpu-type: nvidia-l4
+    # Cost optimization settings
+    run.googleapis.com/execution-environment: gen2
+    run.googleapis.com/cpu-throttling: "false"
+    # Timeout settings
+    run.googleapis.com/timeout: "3600s"  # 1 hour max per request
+spec:
+  template:
+    metadata:
+      annotations:
+        # Scaling configuration
+        autoscaling.knative.dev/minScale: "0"  # Scale to zero when idle
+        autoscaling.knative.dev/maxScale: "3"  # Max 3 instances
+        # Resource allocation
+        run.googleapis.com/memory: "16Gi"
+        run.googleapis.com/cpu: "4"
+        run.googleapis.com/gpu: "1"
+        # Startup time
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 1  # One video generation per container
+      timeoutSeconds: 3600     # 1 hour timeout
+      containers:
+      - image: gcr.io/PROJECT_ID/animatediff-backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: animatediff-secrets
+              key: admin-password
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: animatediff-secrets
+              key: jwt-secret
+        - name: MAX_CONCURRENT_JOBS
+          value: "1"
+        - name: CLEANUP_INTERVAL
+          value: "300"  # 5 minutes
+        - name: MAX_STORED_VIDEOS
+          value: "10"   # Limit storage in cloud
+        resources:
+          limits:
+            memory: "16Gi"
+            cpu: "4"
+            nvidia.com/gpu: "1"
+          requests:
+            memory: "8Gi"
+            cpu: "2"
+        # Health check
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MusicGen AI - Music Generation</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">🎵 MusicGen AI</h1>
+            <p class="subtitle">Generate music from text descriptions using AI</p>
+            
+            <!-- System Info -->
+            <div class="system-info-container">
+                <div class="system-info" id="systemInfo">
+                    <span class="loading">Loading system info...</span>
+                </div>
+                <div class="performance-info" id="performanceInfo" style="display: none;">
+                    <div class="perf-metric" id="generationTime">
+                        <span class="metric-label">Last Gen:</span>
+                        <span class="metric-value">-</span>
+                    </div>
+                    <div class="perf-metric" id="gpuMemory">
+                        <span class="metric-label">GPU Mem:</span>
+                        <span class="metric-value">-</span>
+                    </div>
+                    <div class="perf-metric" id="deviceTemp">
+                        <span class="metric-label">Temp:</span>
+                        <span class="metric-value">-</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Generation Form -->
+            <section class="generation-section">
+                <h2>Generate Music</h2>
+                
+                <form id="generationForm" class="generation-form">
+                    <!-- Prompt Input -->
+                    <div class="form-group">
+                        <label for="prompt">Music Description</label>
+                        <textarea 
+                            id="prompt" 
+                            name="prompt" 
+                            placeholder="Describe the music you want to generate... 
+Examples:
+• Upbeat electronic dance track with heavy bass
+• Relaxing acoustic guitar melody for meditation
+• Epic orchestral soundtrack for a fantasy movie
+• Jazz piano solo in the style of Bill Evans
+• Ambient soundscape with nature sounds"
+                            rows="4"
+                            required
+                        ></textarea>
+                        <div class="form-help">Be descriptive! Include genre, mood, instruments, and style.</div>
+                    </div>
+
+                    <!-- Duration Control -->
+                    <div class="form-group">
+                        <label for="duration">Duration: <span id="durationValue">30</span> seconds</label>
+                        <input 
+                            type="range" 
+                            id="duration" 
+                            name="duration" 
+                            min="2" 
+                            max="300" 
+                            value="30" 
+                            step="1"
+                            class="duration-slider"
+                        >
+                        <div class="duration-labels">
+                            <span>2s</span>
+                            <span>5min</span>
+                        </div>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="form-group">
+                        <label for="model">Model Size</label>
+                        <select id="model" name="model">
+                            <option value="small">Small - Fast generation (300M params)</option>
+                            <option value="medium">Medium - Balanced quality (1.5B params)</option>
+                            <option value="large">Large - Best quality (3.3B params)</option>
+                        </select>
+                        <div class="form-help">Small model is recommended for testing. Large model produces best quality but takes longer.</div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="form-group">
+                        <div class="advanced-toggle">
+                            <button type="button" class="toggle-btn" id="advancedToggle">
+                                ⚙️ Advanced Settings
+                            </button>
+                        </div>
+                        
+                        <div class="advanced-settings" id="advancedSettings" style="display: none;">
+                            <!-- Seed -->
+                            <div class="form-subgroup">
+                                <label for="seed">Random Seed (optional)</label>
+                                <input 
+                                    type="number" 
+                                    id="seed" 
+                                    name="seed" 
+                                    placeholder="Leave empty for random"
+                                    min="0"
+                                    max="2147483647"
+                                >
+                                <div class="form-help">Use the same seed to reproduce identical results.</div>
+                            </div>
+                            
+                            <!-- Device Selection -->
+                            <div class="form-subgroup">
+                                <label for="deviceSelect">Device Selection</label>
+                                <select id="deviceSelect" name="deviceSelect">
+                                    <option value="auto">Auto (Recommended)</option>
+                                    <option value="force_cpu">Force CPU</option>
+                                </select>
+                                <div class="form-help" id="deviceHelp">Automatically selects the best available device.</div>
+                            </div>
+                            
+                            <!-- GPU Memory Monitor -->
+                            <div class="form-subgroup" id="gpuMonitorGroup" style="display: none;">
+                                <label>GPU Memory Usage</label>
+                                <div class="memory-monitor">
+                                    <div class="memory-bar">
+                                        <div class="memory-used" id="memoryUsed" style="width: 0%"></div>
+                                    </div>
+                                    <div class="memory-info">
+                                        <span id="memoryText">Loading...</span>
+                                        <button type="button" class="clear-cache-btn" id="clearCacheBtn">Clear Cache</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="submit" class="generate-btn" id="generateBtn">
+                        <span class="btn-text">Generate Music</span>
+                        <span class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                            Generating...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Example Prompts -->
+                <div class="example-prompts">
+                    <h3>Example Prompts</h3>
+                    <div class="prompt-tags">
+                        <button class="prompt-tag" data-prompt="Upbeat electronic dance music with synthesizers and drums">EDM Track</button>
+                        <button class="prompt-tag" data-prompt="Peaceful acoustic guitar fingerpicking with light percussion">Acoustic Guitar</button>
+                        <button class="prompt-tag" data-prompt="Classical piano piece in the style of Chopin, melancholic and expressive">Classical Piano</button>
+                        <button class="prompt-tag" data-prompt="Lo-fi hip hop beat with vinyl crackle and jazz samples">Lo-fi Hip Hop</button>
+                        <button class="prompt-tag" data-prompt="Epic orchestral music with strings and brass, cinematic and powerful">Epic Orchestral</button>
+                        <button class="prompt-tag" data-prompt="Ambient atmospheric soundscape with ethereal pads and reverb">Ambient</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Generation Status -->
+            <section class="status-section" id="statusSection" style="display: none;">
+                <h2>Generation Status</h2>
+                <div class="status-card" id="statusCard">
+                    <div class="status-header">
+                        <span class="status-label" id="statusLabel">Processing</span>
+                        <span class="job-id" id="jobId"></span>
+                    </div>
+                    <div class="status-message" id="statusMessage">Starting generation...</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Audio Player -->
+            <section class="player-section" id="playerSection" style="display: none;">
+                <h2>Generated Music</h2>
+                <div class="audio-player">
+                    <audio controls id="audioPlayer" class="audio-control">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="player-info" id="playerInfo">
+                        <div class="track-title" id="trackTitle">Generated Track</div>
+                        <div class="track-details" id="trackDetails"></div>
+                    </div>
+                    <div class="player-actions">
+                        <button class="download-btn" id="downloadBtn">
+                            📥 Download
+                        </button>
+                        <button class="share-btn" id="shareBtn">
+                            🔗 Copy Link
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Performance Monitoring -->
+            <section class="performance-section" id="performanceSection" style="display: none;">
+                <h2>Performance Monitoring</h2>
+                
+                <div class="performance-grid">
+                    <!-- Device Status -->
+                    <div class="performance-card">
+                        <h3>🖥️ Device Status</h3>
+                        <div class="device-info" id="deviceInfo">
+                            <div class="loading-placeholder">Loading device info...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Generation Statistics -->
+                    <div class="performance-card">
+                        <h3>📊 Generation Stats</h3>
+                        <div class="stats-grid" id="statsGrid">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Generated:</span>
+                                <span class="stat-value" id="totalGenerated">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">GPU Generations:</span>
+                                <span class="stat-value" id="gpuGenerated">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg GPU Time:</span>
+                                <span class="stat-value" id="avgGpuTime">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Avg CPU Time:</span>
+                                <span class="stat-value" id="avgCpuTime">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GPU Memory Chart -->
+                    <div class="performance-card" id="gpuMemoryCard">
+                        <h3>🧠 GPU Memory</h3>
+                        <div class="memory-chart">
+                            <div class="memory-visualization">
+                                <div class="memory-segment allocated" id="memoryAllocated"></div>
+                                <div class="memory-segment cached" id="memoryCached"></div>
+                                <div class="memory-segment free" id="memoryFree"></div>
+                            </div>
+                            <div class="memory-legend">
+                                <div class="legend-item">
+                                    <span class="legend-color allocated"></span>
+                                    <span>Allocated</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color cached"></span>
+                                    <span>Cached</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color free"></span>
+                                    <span>Free</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Insights -->
+                    <div class="performance-card">
+                        <h3>💡 Insights</h3>
+                        <div class="insights-list" id="insightsList">
+                            <div class="loading-placeholder">Loading insights...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="performance-controls">
+                    <button class="perf-btn" id="refreshPerformance">🔄 Refresh</button>
+                    <button class="perf-btn" id="clearGpuCache">🧹 Clear GPU Cache</button>
+                    <button class="perf-btn toggle-btn" id="togglePerformance">📈 Show Performance</button>
+                </div>
+            </section>
+
+            <!-- Generated Music Library -->
+            <section class="library-section">
+                <h2>Music Library</h2>
+                <div class="library-controls">
+                    <button class="refresh-btn" id="refreshLibrary">🔄 Refresh</button>
+                    <span class="library-count" id="libraryCount">Loading...</span>
+                    <button class="perf-btn toggle-btn" id="showPerformanceBtn">📈 Performance</button>
+                </div>
+                <div class="music-grid" id="musicGrid">
+                    <div class="loading-placeholder">Loading your music library...</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by MusicGen AI | Built with FastAPI</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

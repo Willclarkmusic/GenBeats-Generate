@@ -65,7 +65,20 @@ function updateSliderValues() {
     document.querySelectorAll('input[type="range"]').forEach(slider => {
         const valueSpan = document.getElementById(slider.id + '-value');
         if (valueSpan) {
-            valueSpan.textContent = slider.value;
+            if (slider.id === 'duration') {
+                // Convert seconds to frames and display both
+                const seconds = parseFloat(slider.value);
+                const frames = Math.round(seconds * 8); // 8 FPS
+                valueSpan.textContent = seconds.toFixed(1);
+                
+                // Update the frames display
+                const framesSpan = document.querySelector('.duration-frames');
+                if (framesSpan) {
+                    framesSpan.textContent = `(${frames} frames)`;
+                }
+            } else {
+                valueSpan.textContent = slider.value;
+            }
         }
     });
 }
@@ -83,28 +96,32 @@ function setupPresets() {
             negative_prompt: "blurry, low quality, amateur, shaky",
             steps: 35,
             guidance_scale: 8.0,
-            motion_scale: 0.8
+            motion_scale: 0.8,
+            duration: 4.0  // 4 seconds
         },
         nature: {
             prompt: "peaceful forest stream with flowing water, gentle breeze through trees, natural lighting",
             negative_prompt: "artificial, fake, processed, over-saturated",
             steps: 28,
             guidance_scale: 7.5,
-            motion_scale: 1.2
+            motion_scale: 1.2,
+            duration: 3.0  // 3 seconds
         },
         portrait: {
             prompt: "close-up portrait of a person with natural expressions, soft lighting, professional photography",
             negative_prompt: "distorted face, blurry, low quality, artificial",
             steps: 32,
             guidance_scale: 9.0,
-            motion_scale: 0.6
+            motion_scale: 0.6,
+            duration: 2.5  // 2.5 seconds
         },
         abstract: {
             prompt: "abstract flowing colors and shapes, mesmerizing patterns, artistic visualization",
             negative_prompt: "realistic, photographic, mundane",
             steps: 25,
             guidance_scale: 6.0,
-            motion_scale: 1.5
+            motion_scale: 1.5,
+            duration: 5.0  // 5 seconds
         }
     };
     
@@ -125,6 +142,9 @@ function applyPreset(preset) {
     document.getElementById('steps').value = preset.steps;
     document.getElementById('guidance_scale').value = preset.guidance_scale;
     document.getElementById('motion_scale').value = preset.motion_scale;
+    if (preset.duration) {
+        document.getElementById('duration').value = preset.duration;
+    }
     updateSliderValues();
     updateCharCounter();
 }
@@ -133,6 +153,11 @@ async function handleVideoGeneration(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
+    
+    // Convert seconds to frames (8 FPS)
+    const durationSeconds = parseFloat(formData.get('duration'));
+    const durationFrames = Math.round(durationSeconds * 8);
+    
     const requestData = {
         prompt: formData.get('prompt'),
         negative_prompt: formData.get('negative_prompt') || '',
@@ -140,7 +165,7 @@ async function handleVideoGeneration(e) {
         guidance_scale: parseFloat(formData.get('guidance_scale')),
         width: parseInt(formData.get('width')),
         height: parseInt(formData.get('height')),
-        duration: parseInt(formData.get('duration')),
+        duration: durationFrames, // Send frames to backend
         motion_scale: parseFloat(formData.get('motion_scale')),
         seed: parseInt(formData.get('seed')) || -1
     };

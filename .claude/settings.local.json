@@ -6,7 +6,24 @@
       "Bash(sudo apt:*)",
       "Bash(sudo apt install:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(grep:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "Bash(pip install:*)",
+      "Bash(rm:*)",
+      "Bash(nvidia-smi:*)",
+      "Bash(source:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(venv/Scripts/python.exe -m pip uninstall:*)",
+      "Bash(venv/Scripts/python.exe -m pip install:*)",
+      "Bash(venv/Scripts/python.exe -c \"import torch; print(f''CUDA available: {torch.cuda.is_available()}'')\")",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(timeout:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(kill:*)"
     ],
     "deny": []
   }

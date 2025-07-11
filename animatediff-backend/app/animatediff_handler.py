@@ -168,6 +168,12 @@ class AnimateDiffHandler:
                 lambda: self._generate_frames(generation_params, job_id)
             )
             
+            # Apply any progress updates that were collected during generation
+            if hasattr(self, '_progress_updates') and self._progress_updates:
+                # Use the last progress update
+                last_progress, last_message = self._progress_updates[-1]
+                await queue_manager.update_job_progress(job_id, last_progress, last_message)
+            
             generation_time = time.time() - start_time
             
             # Update progress
@@ -207,16 +213,16 @@ class AnimateDiffHandler:
     def _generate_frames(self, params: Dict[str, Any], job_id: str) -> list:
         """Generate frames synchronously with progress updates"""
         try:
-            # Create callback for progress updates
+            # Store progress updates to apply later
+            self._progress_updates = []
+            
+            # Create callback for progress updates (synchronous only)
             def callback(step: int, timestep: int, latents: torch.FloatTensor):
                 progress = 0.2 + (step / params["num_inference_steps"]) * 0.6
-                asyncio.create_task(
-                    queue_manager.update_job_progress(
-                        job_id, 
-                        progress, 
-                        f"Generating frame {step}/{params['num_inference_steps']}"
-                    )
-                )
+                message = f"Generating frame {step}/{params['num_inference_steps']}"
+                # Store the update instead of trying to run async code
+                self._progress_updates.append((progress, message))
+                logger.info(f"Generation progress: {progress:.1%} - {message}")
             
             # Generate with callback
             result = self.pipeline(

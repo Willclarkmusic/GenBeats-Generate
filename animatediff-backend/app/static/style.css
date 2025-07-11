@@ -189,6 +189,13 @@ input[type="range"]::-webkit-slider-thumb {
     margin-top: 5px;
 }
 
+.duration-frames {
+    display: block;
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 2px;
+}
+
 /* Buttons */
 .btn {
     padding: 12px 24px;

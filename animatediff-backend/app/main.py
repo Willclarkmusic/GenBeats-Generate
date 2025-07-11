@@ -19,6 +19,7 @@ from .auth import get_current_user, get_current_user_optional, login_user
 from .queue_manager import queue_manager
 from .animatediff_handler import animatediff_handler
 from .file_manager import file_manager
+from .cloud_optimizer import cloud_optimizer
 
 # Configure logging
 logging.basicConfig(
@@ -377,6 +378,39 @@ async def manual_cleanup(current_user: dict = Depends(get_current_user)):
     except Exception as e:
         logger.error(f"Error during manual cleanup: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/cloud/stats")
+async def get_cloud_stats(current_user: dict = Depends(get_current_user)):
+    """Get cloud optimization and cost stats"""
+    cloud_optimizer.record_activity()  # Record user activity
+    return cloud_optimizer.get_optimization_stats()
+
+@app.get("/cloud/cost-estimate")
+async def get_cost_estimate(
+    generation_time: float,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get cost estimate for a generation time"""
+    cloud_optimizer.record_activity()
+    return cloud_optimizer.estimate_cost(generation_time)
+
+@app.post("/cloud/cleanup")
+async def cloud_cleanup(current_user: dict = Depends(get_current_user)):
+    """Trigger cloud-optimized cleanup"""
+    try:
+        await cloud_optimizer.cleanup_old_files(max_age_minutes=30)
+        return {"message": "Cloud cleanup completed"}
+    except Exception as e:
+        logger.error(f"Error during cloud cleanup: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+# Record activity on all endpoints
+@app.middleware("http")
+async def record_activity_middleware(request: Request, call_next):
+    """Middleware to record user activity for cloud optimization"""
+    cloud_optimizer.record_activity()
+    response = await call_next(request)
+    return response
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8000"))
